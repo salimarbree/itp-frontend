@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 
@@ -45,11 +45,10 @@ const MEDIA_ICONS: Record<MediaType, string> = { text: "📝", image: "🖼", au
 const MEDIA_COLORS: Record<MediaType, string> = { text: "#6366f1", image: "#ec4899", audio: "#f59e0b", video: "#ef4444", youtube: "#ef4444" };
 const MEDIA_ACCEPT: Record<MediaType, string> = { text: "", image: "image/*", audio: "audio/*", video: "video/*", youtube: "" };
 
-export default function ContentEditorPage() {
+function ContentEditor({ viewId }: { viewId: string | null }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const contentId = searchParams.get("id");
-  const isEdit = !!contentId;
+  const contentId = viewId;
+  const isEdit = !!viewId;
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -608,5 +607,25 @@ export default function ContentEditorPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+function EditorWithSearchParams() {
+  const searchParams = useSearchParams();
+  const viewId = searchParams.get("id");
+  return <ContentEditor viewId={viewId} />;
+}
+
+export default function ContentEditorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      }
+    >
+      <EditorWithSearchParams />
+    </Suspense>
   );
 }

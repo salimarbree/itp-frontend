@@ -3,15 +3,13 @@
 import { useAuth } from "@/context/AuthContext";
 import InteractiveTeachingPlatform from "@/components/InteractiveTeachingPlatform";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import api from "@/lib/api";
 
-export default function DashboardPage() {
+function DashboardContent({ viewId }: { viewId: string | null }) {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const viewId = searchParams.get("view");
-  
+
   const [contents, setContents] = useState<any[]>([]);
   const [viewingContent, setViewingContent] = useState<number | undefined>(viewId ? parseInt(viewId) : undefined);
 
@@ -132,5 +130,25 @@ export default function DashboardPage() {
         )}
       </main>
     </div>
+  );
+}
+
+function DashboardWithSearchParams() {
+  const searchParams = useSearchParams();
+  const viewId = searchParams.get("view");
+  return <DashboardContent viewId={viewId} />;
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      }
+    >
+      <DashboardWithSearchParams />
+    </Suspense>
   );
 }
